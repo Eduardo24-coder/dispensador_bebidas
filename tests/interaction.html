@@ -1,0 +1,59 @@
+<!doctype html><meta charset="utf-8"><iframe src="../index.html" style="width:360px;height:850px"></iframe><pre id="result">RUNNING</pre><script>
+const frame=document.querySelector('iframe'),results=[],errors=[];
+frame.addEventListener('load',async()=>{
+const w=frame.contentWindow,d=w.document,c=[...d.querySelectorAll('.drink')],area=d.querySelector('#carousel');
+w.addEventListener('error',e=>errors.push(e.message));
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+const check=(name,ok)=>results.push((ok?'PASS ':'FAIL ')+name);
+const active=()=>d.body.classList.contains('serving');
+const selected=()=>c.findIndex(x=>x.getAttribute('aria-pressed')==='true');
+const sizes=[...d.querySelectorAll('.portion-button')];
+const chosenSize=()=>Number(sizes.find(x=>x.getAttribute('aria-pressed')==='true').dataset.ounces);
+check('Default portion is 6 oz',chosenSize()===6);
+sizes[0].click();check('Portion actions require a selected drink',sizes.every(x=>x.disabled)&&!active()&&selected()===-1);
+// Synthetic PointerEvents do not create browser active pointers: stub capture only.
+c.forEach(x=>{x.setPointerCapture=()=>{};x.hasPointerCapture=()=>false;});
+function point(type,card=c[0],extra={}){const r=card.getBoundingClientRect();card.dispatchEvent(new w.PointerEvent(type,{bubbles:true,pointerId:1,isPrimary:true,button:0,clientX:r.x+r.width/2,clientY:r.y+r.height/2,...extra}));}
+function key(type,k,card=c[0],repeat=false){card.dispatchEvent(new w.KeyboardEvent(type,{key:k,bubbles:true,cancelable:true,repeat}));}
+point('pointerdown');await delay(360);check('Hold without selection does not serve',!active()&&selected()===-1);point('pointerup');
+point('pointerdown');point('pointerup');check('First tap selects only',selected()===0&&!active());
+point('pointerdown');point('pointerup');await delay(340);check('Short second tap does not serve',!active());
+point('pointerdown');await delay(350);check('Second hold serves',active());
+check('Portion buttons locked while serving',sizes.every(x=>x.disabled));sizes[0].click();check('Portion cannot change during serving',chosenSize()===6);
+const old=selected();d.querySelector('#next').click();check('Carousel locked while serving',selected()===old);
+point('pointerdown',c[1],{pointerId:2,isPrimary:false});point('pointerup',c[1],{pointerId:2,isPrimary:false});check('Additional pointer ignored',active());
+point('pointerup');check('Release stops and retains selection',!active()&&selected()===0);
+check('Portion retained and unlocked after release',chosenSize()===6&&sizes.every(x=>!x.disabled));
+point('pointerdown');await delay(350);point('pointermove',c[0],{clientX:-20});check('Leaving area stops',!active());point('pointermove');await delay(350);check('Reentry does not restart',!active());point('pointerup');
+point('pointerdown');await delay(350);point('pointercancel');check('Pointer cancellation stops',!active());
+point('pointerdown');await delay(350);point('lostpointercapture');check('Lost capture stops',!active());
+point('pointerdown');await delay(350);w.dispatchEvent(new Event('blur'));check('Blur stops',!active());
+point('pointerdown');await delay(350);Object.defineProperty(d,'hidden',{configurable:true,value:true});d.dispatchEvent(new Event('visibilitychange'));check('Hidden page stops',!active());Object.defineProperty(d,'hidden',{configurable:true,value:false});
+point('pointerdown');await delay(350);w.dispatchEvent(new Event('pagehide'));check('Page exit stops',!active());
+point('pointerdown');const r=c[0].getBoundingClientRect();point('pointermove',c[0],{clientX:r.x-70});point('pointerup',c[0],{clientX:r.x-70});await delay(350);check('Swipe clears selection and never serves',selected()===-1&&!active());
+c[1].focus();key('keydown','Enter',c[1]);check('Enter selects focused card',selected()===1);key('keydown',' ',c[1]);key('keydown',' ',c[1],true);await delay(350);check('Space hold serves',active());key('keyup',' ',c[1]);check('Space release stops',!active());
+check('360px no horizontal page overflow',d.documentElement.scrollWidth<=360);
+check('All local images loaded',Array.from(d.images).every(x=>x.complete&&x.naturalWidth>0));
+frame.style.width='1100px';await delay(400);check('Desktop no horizontal overflow',d.documentElement.scrollWidth<=1100);
+const demo=w.createDemoDispenser();await demo.stop({sessionId:99});await demo.start({sessionId:99,drinkId:0});check('Canceled adapter session cannot restart',!demo.getState().serving);await demo.start({sessionId:100,drinkId:0});await demo.start({sessionId:100,drinkId:0});check('Adapter duplicate start is idempotent',demo.getState().sessionId===100);await demo.stop({sessionId:100});await demo.stop({sessionId:100});check('Adapter duplicate stop is idempotent',!demo.getState().serving);
+await demo.start({sessionId:101,drinkId:1,portionOz:8});check('Adapter retains requested portion',demo.getState().portionOz===8);await demo.stop({sessionId:101});let rejected=false;try{await demo.start({sessionId:102,drinkId:0,portionOz:12});}catch(e){rejected=true;}check('Adapter rejects unsupported portions',rejected&&!demo.getState().serving);
+const timing=w.DispenserTiming;
+check('Provisional duration calculation',Math.abs(timing.estimateMs(0,4)-5914.706)<.01&&Math.abs(timing.estimateMs(0,8)-11829.412)<.01);
+timing.flowMlPerMinute=[12000,12000,12000];
+for(const [i,oz] of [4,6,8].entries()){
+  sizes[i].click();await delay(20);
+  check(`${oz} oz single click starts automatically`,active()&&chosenSize()===oz&&d.querySelector('#hint').textContent.includes(`${oz} oz`));
+  key('keyup',' ',sizes[i]);check(`${oz} oz release does not stop automatic mode`,active());
+  sizes[(i+1)%3].click();check(`${oz} oz duplicate activation blocked`,chosenSize()===oz&&sizes.every(x=>x.disabled));
+  await delay(timing.estimateMs(1,oz)+80);
+  check(`${oz} oz automatically completes`,!active()&&d.querySelector('#status').textContent==='Proceso finalizado'&&selected()===1);
+}
+sizes[0].click();await delay(100);w.dispatchEvent(new Event('blur'));check('Automatic serving can be interrupted on blur',!active());
+sizes[2].click();await delay(550);check('Old deadline cannot stop a new serving session',active()&&chosenSize()===8);await delay(750);check('New session finishes on its own deadline',!active());
+sizes[1].click();await delay(20);w.dispatchEvent(new Event('blur'));check('Automatic mode stops on blur',!active());
+sizes[1].click();await delay(20);Object.defineProperty(d,'hidden',{configurable:true,value:true});d.dispatchEvent(new Event('visibilitychange'));check('Automatic mode stops on hidden page',!active());Object.defineProperty(d,'hidden',{configurable:true,value:false});
+timing.flowMlPerMinute[1]=0;w.dispatchEvent(new Event('resize'));check('Invalid flow disables automatic actions',sizes.every(x=>x.disabled));timing.flowMlPerMinute[1]=12000;
+frame.style.width='360px';await delay(400);check('Large portion buttons fit at 360px',d.documentElement.scrollWidth<=360&&sizes.every(x=>x.getBoundingClientRect().width>=80));
+check('No observed JavaScript errors',errors.length===0);document.querySelector('#result').textContent=results.join('\n')+'\n'+errors.join('\n');
+});
+</script>

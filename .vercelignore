@@ -1,0 +1,6 @@
+.git/
+.vscode/
+tests/
+README.md
+VERIFICACION.md
+deploy.ps1
