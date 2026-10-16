@@ -1,11 +1,11 @@
 /* Adapter contract: start({sessionId, drinkId, portionOz, mode, durationMs}), stop({sessionId}), getState().
    Session IDs must be unique. stop invalidates a session even before start resolves.
    A future asynchronous adapter must enforce this at the transport/firmware level. */
-// PROVISIONAL EXAMPLE ONLY: replace each rate after measuring that pump.
+// Provisional midpoint of the reported 1.5–2 L/min range; calibrate each pump.
 // US fluid ounces: 1 fl oz = approximately 29.57353 mL (NIST SP 811).
 window.DispenserTiming = {
   mlPerOz: 29.57353,
-  flowMlPerMinute: [1200, 1200, 1200], // Coca-Cola, Seven Up, Gatorade.
+  flowMlPerMinute: [1750, 1750, 1750], // Coca-Cola, Seven Up, Gatorade.
   estimateMs(drinkId, ounces) {
     const flow = this.flowMlPerMinute[drinkId];
     if (![4, 6, 8].includes(ounces) || !Number.isFinite(flow) || flow <= 0) {

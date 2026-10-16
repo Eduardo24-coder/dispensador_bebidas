@@ -22,21 +22,23 @@ Como alternativa, con Node.js instalado y acceso a tu cuenta: `npx vercel login`
 
 ## Interacción
 
-Selecciona una bebida y coloca el vaso. Los botones grandes **SERVIR 4 oz / 6 oz / 8 oz** muestran el tiempo estimado. Un toque inicia una sesión automática de demostración y al terminar el tiempo se detiene. Soltar el botón no interrumpe este modo. La pérdida de foco, ocultación o salida de la página sí lo interrumpen. Las acciones y el carrusel se bloquean durante la sesión; no se encolan pulsaciones adicionales.
+La vista móvil prioriza el uso con una mano: encabezado compacto, carrusel, estado y botón grande **Mantén para servir**. Primero selecciona una bebida y coloca el vaso. Mantén el botón durante 300 ms para iniciar; soltar, cancelar o salir de su área detiene inmediatamente la simulación. Volver a entrar no reinicia. La animación no cambia la posición del botón durante la pulsación. Con teclado, mantener Espacio o Enter sobre el botón sirve, y soltar detiene.
+
+**Porciones automáticas** es un desplegable cerrado inicialmente. Al abrirlo aparecen **SERVIR 4 oz / 6 oz / 8 oz**, con sus tiempos estimados. Elegir una opción cierra el desplegable y cambia su etiqueta a «Sirviendo X oz». La sesión se detiene al concluir el tiempo; al terminar se recupera la etiqueta original y el panel sigue cerrado. Soltar el botón no interrumpe este modo. La pérdida de foco, ocultación o salida de la página sí lo interrumpen. Las acciones, el desplegable y el carrusel se bloquean durante la sesión; no se encolan pulsaciones adicionales.
 
 La tarjeta conserva el modo manual por pulsación mantenida, con parada inmediata al soltar. Con teclado, Enter selecciona la tarjeta y mantener Espacio sirve manualmente. Tab permite enfocar los botones de porción; Enter o Espacio los activan con la interacción nativa del navegador.
 
 ### Tiempo estimado y calibración
 
-En `js/dispenser.js`, `DispenserTiming.flowMlPerMinute = [1200, 1200, 1200]` define el caudal de cada bomba, en el orden Coca-Cola / Seven Up / Gatorade. **Es un ejemplo provisional autorizado para la demostración, no una especificación ni medición de las bombas.** Sustituye cada número por su caudal medido. Las notas técnicas se conservan en esta documentación; la interfaz no muestra etiquetas de demostración.
+En `js/dispenser.js`, `DispenserTiming.flowMlPerMinute = [1750, 1750, 1750]` define el caudal de cada bomba, en el orden Coca-Cola / Seven Up / Gatorade. **Es el punto medio provisional del rango informado de 1,5 a 2 litros/minuto, no una medición individual de las bombas.** Sustituye cada número por su caudal medido. Las notas técnicas se conservan en esta documentación; la interfaz no muestra etiquetas de demostración.
 
-Usando onzas líquidas estadounidenses (1 fl oz ≈ 29,57353 ml), `tiempo(s) = oz × 29,57353 × 60 / caudal(ml/min)`. Con el valor provisional de 1200 ml/min: 4 oz ≈ 118,3 ml → 5,9 s; 6 oz ≈ 177,4 ml → 8,9 s; 8 oz ≈ 236,6 ml → 11,8 s. Conversión: https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors/nist-guide-si-appendix-b9
+Usando onzas líquidas estadounidenses (1 fl oz ≈ 29,57353 ml), `tiempo(s) = oz × 29,57353 × 60 / caudal(ml/min)`. Con el valor provisional de 1750 ml/min: 4 oz ≈ 118,3 ml → 4,1 s; 6 oz ≈ 177,4 ml → 6,1 s; 8 oz ≈ 236,6 ml → 8,1 s. Se conserva la precisión completa para los temporizadores y se redondea solo la presentación. Conversión: https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors/nist-guide-si-appendix-b9
 
 Para calibrar: mide el volumen recogido durante un tiempo conocido con el circuito real; `caudal(ml/min) = volumen(ml) × 60 / tiempo(s)`. Repite por bomba y bebida con las mangueras, altura y alimentación finales. Un control por tiempo solo estima volumen: la dosificación exacta requiere verificación física y considerar variaciones del caudal, arranque y goteo. La aplicación no mide volumen real ni afirma haber entregado la cantidad solicitada; muestra «Proceso finalizado».
 
 Desliza o usa las flechas para explorar; el carrusel no avanza automáticamente. Un toque breve selecciona y centra la tarjeta. Una nueva pulsación mantenida de 300 ms sobre esa tarjeta inicia la simulación. Soltar o salir de la tarjeta detiene; regresar no reinicia. Un toque corto o mantener una tarjeta sin selección previa no sirve. Explorar cancela la selección. Durante el servido se bloquea la navegación.
 
-Con teclado: Tab enfoca los controles, las flechas exploran, Enter selecciona y mantener Espacio sobre la tarjeta seleccionada sirve después del umbral. Soltar Espacio detiene. La selección se conserva después de detener.
+Con teclado: Tab enfoca los controles, las flechas exploran, Enter selecciona y mantener Espacio sobre la tarjeta seleccionada sirve después del umbral. Soltar Espacio detiene. La selección se conserva durante 1,5 segundos después de detener o completar el servido. Después se desactiva y la última bebida queda centrada a su tamaño normal, sin etiqueta ni borde de selección; debe seleccionarse de nuevo para servir. Una nueva selección, exploración o pulsación válida cancela el temporizador anterior. La tarjeta seleccionada aumenta a escala 1,11; al deseleccionarse vuelve a 0,94, marcando visualmente el cambio.
 
 ## Archivos y configuración
 
@@ -46,7 +48,7 @@ Con teclado: Tab enfoca los controles, las flechas exploran, Enter selecciona y 
 - `js/dispenser.js`: fábrica del adaptador de demostración con `start`, `stop` y `getState`.
 - `assets/`: tres SVG locales.
 
-La aplicación controla un solo pointerId, captura el puntero y cancela ante pointerup, pointercancel, pérdida de captura/foco, página oculta o salida de página. Mientras se sirve verifica que el puntero siga dentro del área de la tarjeta. Arrastrar antes del umbral cancela el inicio. No se deshabilita el zoom.
+La aplicación controla un solo pointerId. En modo manual captura el puntero y cancela ante pointerup, pointercancel, pérdida de captura/foco, página oculta o salida de página. Mientras se sirve verifica que el puntero siga dentro del área de la tarjeta o botón que inició la sesión. Arrastrar antes del umbral cancela el inicio. No se deshabilita el zoom.
 
 ## Integración pendiente con ESP8266-01
 

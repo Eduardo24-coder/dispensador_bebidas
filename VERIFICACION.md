@@ -6,7 +6,11 @@ Publicado en https://dispensadorbebidas.vercel.app. Vercel confirmó el estado `
 
 ## Interacción local
 
-Pruebas ejecutadas en Google Chrome headless con los archivos locales. Las 52 comprobaciones de `tests/interaction.html` pasaron:
+Pruebas ejecutadas en Google Chrome headless con los archivos locales. Las 85 comprobaciones de `tests/interaction.html` pasaron:
+
+- Presionar el botón manual cierra inmediatamente el desplegable de porciones, tanto con puntero como con teclado, antes de iniciar el servido.
+
+- Vista móvil: porciones plegadas al inicio; al elegir cada tamaño se cierra el panel y se indica «Sirviendo X oz». El botón manual queda por encima de 740 px a 360 px de ancho, inicia tras el umbral y se detiene al soltar, cancelar, salir o perder captura. Volver a entrar no reinicia. Enter y Espacio funcionan por pulsación mantenida. La animación no desplaza el área del botón. Se inspeccionó una captura del iframe de 360 px en Chrome headless; no se probó con un teléfono físico.
 
 - Botones de porción: requieren bebida seleccionada; cada opción 4/6/8 oz inicia servido automático con un toque, soltar no lo detiene, se bloquean activaciones adicionales y se detiene al concluir el plazo. La pérdida de foco interrumpe; un temporizador anterior no detiene una sesión nueva. Pérdida de foco y ocultación paran también el modo automático. Un caudal inválido deshabilita las acciones; los botones grandes caben a 360 px. La fórmula se comprobó con un caudal provisional. El adaptador conserva `portionOz` y rechaza tamaños distintos de 4/6/8.
 
@@ -25,3 +29,5 @@ El archivo de pruebas puede abrirse con Live Server: presenta los resultados y u
 Una búsqueda del código confirmó ausencia de peticiones y recursos remotos. Las URLs `http://www.w3.org/2000/svg` son identificadores del formato SVG, no descargas. La versión inicial sumaba 20 767 bytes sin compresión; el selector añade HTML, CSS y JavaScript. Medir nuevamente antes de integrar el módulo. Esto no verifica que quepan en su memoria.
 
 No se probó físicamente con teléfono, bombas, relés ni ESP8266-01. No se verificó un adaptador real con respuestas tardías, conectividad Wi-Fi, portal cautivo, tiempos de seguridad ni exclusión entre teléfonos; todo ello depende del protocolo y firmware pendientes.
+
+La selección automática y manual se desactiva tras 1500 ms: conserva la última bebida centrada a tamaño normal, sin etiqueta ni activar los controles. Se verificó reselección sin servido y que los temporizadores anteriores no cancelen sesiones ni selecciones nuevas.

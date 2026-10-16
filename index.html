@@ -12,7 +12,7 @@
 <body>
   <main class="dispenser">
     <header class="topbar"><span class="wordmark"><span class="brand-symbol">◈</span> DISPENSADOR <small>DE BEBIDAS</small></span></header>
-    <section class="intro"><p class="eyebrow">TU PAUSA, A TU GUSTO</p><h1>Elige tu bebida<span>.</span></h1><p>Tres sabores. Tú eliges el momento.</p></section>
+    <section class="intro"><p class="eyebrow">UN SORBO, TU MOMENTO</p><h1>Elige tu bebida<span>.</span></h1><p id="guidance">Desliza y toca para seleccionar</p></section>
     <section class="selection" aria-label="Selección de bebida">
       <div class="carousel" id="carousel" aria-label="Carrusel de bebidas">
         <button class="arrow previous" id="previous" aria-label="Bebida anterior">‹</button>
@@ -24,24 +24,29 @@
         <button class="arrow next" id="next" aria-label="Bebida siguiente">›</button>
       </div>
       <div class="pagination" aria-hidden="true"><i></i><i></i><i></i></div>
-      <p class="explore">↔ &nbsp; Desliza para explorar</p>
-    </section>
-    <section class="portion" aria-labelledby="portion-title">
-      <div class="portion-heading"><h2 id="portion-title">¿Cuánto te servimos?</h2><span id="portion-summary" aria-live="polite">Primero elige tu bebida</span></div>
-      <div class="portion-options" role="group" aria-label="Tamaño de la porción" style="--portion-index:1">
-        <span class="portion-highlight" aria-hidden="true"></span>
-        <button class="portion-button" type="button" data-ounces="4" aria-pressed="false" disabled><span class="portion-action">SERVIR</span><span class="portion-volume">4 <small>oz</small></span><span class="portion-time">≈ 5,9 s</span></button>
-        <button class="portion-button" type="button" data-ounces="6" aria-pressed="true" disabled><span class="portion-action">SERVIR</span><span class="portion-volume">6 <small>oz</small></span><span class="portion-time">≈ 8,9 s</span></button>
-        <button class="portion-button" type="button" data-ounces="8" aria-pressed="false" disabled><span class="portion-action">SERVIR</span><span class="portion-volume">8 <small>oz</small></span><span class="portion-time">≈ 11,8 s</span></button>
-      </div>
-      <p class="portion-note">Un toque inicia · Parada automática al terminar</p>
     </section>
     <section class="control" aria-label="Estado del dispensador">
       <div class="glass" aria-hidden="true"><div class="liquid"></div><i></i><i></i><i></i></div>
-      <div class="status-copy"><p id="status" role="status" aria-live="polite">Toca una bebida para seleccionarla</p><p id="hint">Coloca tu vaso antes de servir</p></div>
+      <div class="status-copy"><p id="status" role="status" aria-live="polite">Coloca tu vaso</p><p id="hint">En la bandeja del dispensador</p></div>
     </section>
-    <div class="instructions"><span><b>1</b> Elige tu bebida y coloca el vaso</span><span><b>2</b> Toca 4, 6 u 8 oz para servir</span><span><b>3</b> El servido termina automáticamente</span></div>
-    <p class="manual-note">También puedes mantener presionada la bebida seleccionada para servir manualmente. Suelta para detener.</p>
+    <section class="manual-control" aria-label="Servido manual">
+      <div class="pour-visual" aria-hidden="true"><span></span><i></i><i></i><i></i></div>
+      <button id="manual-serve" class="manual-serve" type="button" disabled><span class="serve-icon" aria-hidden="true">▶</span><span id="manual-label">Mantén para servir</span></button>
+      <p id="manual-help">Primero selecciona una bebida</p>
+    </section>
+    <details class="portion" id="automatic-portions">
+      <summary><span class="portion-settings" aria-hidden="true">⚙</span><span id="automatic-label">Porciones automáticas</span><span class="portion-chevron" aria-hidden="true"></span></summary>
+      <div class="portion-inner">
+      <div class="portion-heading"><h2 id="portion-title">¿Cuánto te servimos?</h2><span id="portion-summary" aria-live="polite">Primero elige tu bebida</span></div>
+      <div class="portion-options" role="group" aria-label="Tamaño de la porción" style="--portion-index:1">
+        <span class="portion-highlight" aria-hidden="true"></span>
+        <button class="portion-button" type="button" data-ounces="4" aria-pressed="false" disabled><span class="portion-action">SERVIR</span><span class="portion-volume">4 <small>oz</small></span><span class="portion-time">≈ 4,1 s</span></button>
+        <button class="portion-button" type="button" data-ounces="6" aria-pressed="true" disabled><span class="portion-action">SERVIR</span><span class="portion-volume">6 <small>oz</small></span><span class="portion-time">≈ 6,1 s</span></button>
+        <button class="portion-button" type="button" data-ounces="8" aria-pressed="false" disabled><span class="portion-action">SERVIR</span><span class="portion-volume">8 <small>oz</small></span><span class="portion-time">≈ 8,1 s</span></button>
+      </div>
+      <p class="portion-note">Un toque inicia · Parada automática al terminar</p>
+      </div>
+    </details>
     <footer>Hecho para tu próxima pausa</footer>
   </main>
 </body>
